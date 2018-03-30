@@ -1,0 +1,9 @@
+.v_center {
+    display: inline-block;
+    float: none;
+    vertical-align: middle;
+}
+
+/* ______________________________________________________________#FOOTER */
+footer.footer { background:black; }
+/* ______________________________________________________________/ #FOOTER */
