@@ -16,7 +16,7 @@ class AddForeignKeyToTableUsersRoles extends Migration
                 $table->integer('user_id')->unsigned(); //field `user_id` this is FOREIGN KEY and relation this field `id` of table `users`
                 $table->foreign('user_id')->references('id')->on('users');
 
-                $table->integer('role_id')->unsigned()->default(3); //field `role_id` this is FOREIGN KEY and relation this field `id` of table `roles`
+                $table->integer('role_id')->unsigned(); //field `role_id` this is FOREIGN KEY and relation this field `id` of table `roles`
                 $table->foreign('role_id')->references('id')->on('roles');
             });
         }

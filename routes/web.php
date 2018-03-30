@@ -17,6 +17,23 @@
 Auth::routes();
 //Route::get('/home', 'HomeController@index')->name('default_home');
 
+//Route::get( '/download/{filename}', 'ActionController@download');
+
+Route::get( '/download/{filename}', function($filename=FALSE) {
+    // Check if file exists in app/storage/file folder
+    $file_path = public_path() . "/files_for_sale/" . $filename;
+    $headers = array(
+        'Content-Type: docx',
+        'Content-Disposition: attachment; filename='.$filename,
+    );
+    if ( file_exists( $file_path ) ) {
+        // Send Download
+        return \Response::download( $file_path, $filename, $headers );
+    } else {
+        // Error
+        exit( 'Requested file does not exist on our server!' );
+    }
+});
 
 /** 1) FOR FRONTEND part.
 */
@@ -29,13 +46,12 @@ Route::group( ['middleware'=>['web'] ], function() {
     ]);
 
     /** 1.2__________________Articles page - For:'/articles' */
-    /**/
-        Route::resource('articles', 'ArticleResourceController', [
-            'names'=>['index'=>'articles'],
-            'parameters' => [   //For:'/articles/{alias}' (alias = article1,article2,article3...)
-                'articles' => 'alias' //переименовываем стандартное имя для такого маршрута 'articles' на 'alias'
-            ]
-        ]);
+    Route::resource('articles', 'ArticleResourceController', [
+        'names'=>['index'=>'articles', 'show'=>'article_show_single'],
+        'parameters' => [   //For:'/articles/{id}'
+            'articles' => 'id'
+        ]
+    ]);
 
 }); //__/Route::group( ['middleware'=>['web'] ]
 

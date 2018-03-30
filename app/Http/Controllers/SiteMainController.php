@@ -5,11 +5,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 
-//use App\Article;
+use App\Article;
+use App\ArticleCategory;
 
 class SiteMainController extends Controller
 {
     protected static $_objArticle;
+    protected static $_objArticleCategories;
 
     protected $_template_view_name; //for template View
     protected $_vars_for_template_view = array(); //an array with variables that will be passed to the template (View)
@@ -20,7 +22,8 @@ class SiteMainController extends Controller
     //_______________________________________________________________________________________________________________________________________________________________________
 
     public function __construct(){
-        //self::$_objArticle = new Article();
+        self::$_objArticle = new Article();
+        self::$_objArticleCategories = new ArticleCategory();
     }
     //_______________________________________________________________________________________________________________________________________________________________________
 
@@ -62,7 +65,7 @@ class SiteMainController extends Controller
         }
         //If pagination is needed
         else {
-            if( !$select ) { //Если не передаем свой массив полей для выборки данных
+            if( !$select ) { //If we do not pass our array of fields to sample data
                 $result_entries = $objModel::get_entries( false,$pagination,false );
                 if( $result_entries && $relationload ) { $result_entries = $objModel::get_entries( false, $pagination, $relationload, $where ); }
             }
