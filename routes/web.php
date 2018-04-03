@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,23 +18,27 @@
 Auth::routes();
 //Route::get('/home', 'HomeController@index')->name('default_home');
 
-//Route::get( '/download/{filename}', 'ActionController@download');
-
+/** FOR DOWNLOADING FILES. THE FILE NAME is PASSED as a PARAMETER
+*/
 Route::get( '/download/{filename}', function($filename=FALSE) {
-    // Check if file exists in app/storage/file folder
+    //Check if file exists in `/public/files_for_sale`
     $file_path = public_path() . "/files_for_sale/" . $filename;
     $headers = array(
         'Content-Type: docx',
         'Content-Disposition: attachment; filename='.$filename,
     );
     if ( file_exists( $file_path ) ) {
-        // Send Download
-        return \Response::download( $file_path, $filename, $headers );
+        return \Response::download( $file_path, $filename, $headers ); //Send Download
     } else {
-        // Error
-        exit( 'Requested file does not exist on our server!' );
+        exit( 'Requested file does not exist on our server!' ); //Error
     }
 });
+
+
+/** FOR STRIPE
+*/
+Route::post('/checkout', 'StripePaymentController@create_payment');
+
 
 /** 1) FOR FRONTEND part.
 */

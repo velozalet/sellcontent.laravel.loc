@@ -60,6 +60,8 @@
 <!-- /FOOTER -->
 
 
+    <!-- boot on-line Stripe payment system -->
+<script src="https://js.stripe.com/v3/"></script>
     <!-- boot locale jQuery library -->
 <script src="<?= asset('js/jquery-3.2.1.min.js');?>" type="text/javascript"></script>
     <!-- boot locale js-files wow-animation -->
@@ -69,8 +71,99 @@
     <!-- boot my custom main js-file -->
 <script src="<?= asset('js/main.js');?>" type="text/javascript"></script>
 
+<!--wow-animation initialization-->
 <script>
     new WOW().init();
 </script>
+<!--/wow-animation initialization-->
+
+<!--Stripe payment system initialization-->
+<script>
+    // Create a Stripe client.
+    var stripe = Stripe('pk_test_EzqhS5ESUeY4UVVzrBf8xDsu'); //Publishable key
+
+    // Create an instance of Elements.
+    var elements = stripe.elements();
+
+    // Custom styling can be passed to options when creating an Element.
+    // (Note that this demo uses a wider set of styles than the guide below.)
+    var style = {
+        base: {
+            color: '#32325d',
+            lineHeight: '18px',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+        }
+    };
+
+    //Create an instance of the card Element.
+    var card = elements.create('card', {style: style});
+
+    if( document.getElementById('card-element') ) {  //if we are on the Stripe form page
+        //Add an instance of the card Element into the `card-element` <div>.
+        card.mount('#card-element');
+
+        //Handle real-time validation errors from the card Element.
+        card.addEventListener('change', function(event) {
+            var displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        //Handle form submission.
+        var form = document.getElementById('payment-form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var options = { //Additional parameters that will go into the payment information in https://dashboard.stripe.com/test/payments
+                name: document.getElementById('email_customer').value,
+                login_user: document.getElementById('name_customer').value,
+                email_user: document.getElementById('email_customer').value,
+                id_user: document.getElementById('name_customer').value,
+                price_info: document.getElementById('price_article').value,
+            }
+
+            stripe.createToken(card, options).then(function(result) {
+                if (result.error) {
+                    // Inform the user if there was an error.
+                    var errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = result.error.message;
+                } else {
+                    // Send the token to your server.
+                    stripeTokenHandler(result.token);
+                }
+            });
+        });
+
+        /* Submit the token and the rest of your form to your server.
+        The last step is to submit the token, along with any additional information that has been collected, to your server. */
+        function stripeTokenHandler(token){  //console.log(token);
+            // Insert the token ID into the form so it gets submitted to the server
+            var form = document.getElementById('payment-form');
+            var hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+
+            console.log( token.id );
+            form.submit(); //Submit the form
+        }
+    } //__/if( document.getElementById('card-element') )
+
+</script>
+<!--/Stripe payment system initialization-->
+
 </body>
 </html>

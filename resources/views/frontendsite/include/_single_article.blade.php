@@ -1,6 +1,8 @@
 <?php
-//dump($single_article);
-dump($is_user_cannot_view_hidden_content);
+//dd($single_article);
+
+//dd($is_user_cannot_view_hidden_content);
+//dd($id_users_bought_this_content);
 
 /* Получим данные Юзера,если он зарегин и авторизирован, иначе NULL. ($if_current_user_registered->id/$if_current_user_registered->name/$if_current_user_registered->email) */
 $if_current_user_registered = Auth::user();  //также можно использовать конструкцию: if( Auth::check() ) { //вернет TRUE если юзер авторизировался в данный момент }
@@ -8,6 +10,28 @@ $if_current_user_registered = Auth::user();  //также можно испол�
 
 <!-- Single article Section -->
 <div id="singlearticle_anchor_section" class="singlearticle-section" style="margin-top:145px;">
+
+    <!-- Вывод ошибок списком если таковы будут при сохранении(добавлении)/редактировании/удалении данных -->
+    @if( count($errors) > 0 )
+        <div class="alert alert-danger text-center"> <!--class="box error-box"-->
+            <img src="<?=asset('img/attention.png');?>" alt="" style="display:inline-block; float:left;">
+            <ul style="display:inline-block; text-align:left;"> @foreach( $errors->all() as $error ) <li>{{ $error }}</li> @endforeach </ul>
+        </div>
+    @endif
+    <!-- Вывод данных сессии.Будем выводить содержание ее ячейки 'status' при сохранении(добавлении)/редактировании/удаления данных. Сообщения об этом будем сами формировать и записывать в сессию -->
+    @if( session('status') )
+        <div class="alert alert-success text-center"> <!--class="box success-box"-->
+            <i class="fa fa-check" style="font-size:48px; color:green; display:inline-block;"></i>
+            <p style="display:inline-block;font-size:16px;">{{ session('status') }}</p>
+        </div>
+    @endif
+    <!-- Вывод ошибок сессии.Если таковые будут иметь место -->
+    @if( session('error') )
+        <div class="box error-box">
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
     <div class="container-fluid">
         <h1 class="wow slideInLeft" data-wow-duration="2.5s" data-wow-delay="0.3s" data-wow-offset="120">
             <a href="" style="text-transform:uppercase; color:gray; text-decoration:none;"> <?=$single_article[0]->alias;?> </a>
@@ -49,19 +73,23 @@ $if_current_user_registered = Auth::user();  //также можно испол�
                                         <?=$single_article[0]->articlesCategories->title;?>
                                     </button>
                                     <button type="button" class="btn btn-primary article-btn-readmore"><?=$single_article[0]->price;?> $</button>
+
+                                    <!--If the user is logged in and he don`t bought this article(book),then we display the "Bue this book"  button-->
                                     <?php if( Auth::check() ):?>
-                                        <a href="" type="button" class="btn btn-success article-btn-readmore"> Bue this book </a>
+                                        <?php if( !in_array($if_current_user_registered->id, $id_users_bought_this_content) ):?>
+                                            <a href="" type="button" class="btn btn-success article-btn-readmore" data-toggle="modal" data-target="#formBueUserModalWindow"> Bue this book </a>
+                                        <?php endif;?>
                                     <?php endif;?>
 
-                                    <?php if( Auth::check() && $is_user_cannot_view_hidden_content == false):?>
-                                    <div class="row">
-                                        <div class="col-lg-6 col-md-6 col-lg-offset-3 col-md-offset-3" style="margin-top:22px;">
-                                            <a href="/public/files_for_sale/<?=$single_article[0]->file_path;?>" type="button" class="btn btn-success" download> Download this file </a>
-                                        </div>
-                                    </div>
-                                    <a href="<?=url('/download/'.$single_article[0]->file_path);?>" target="_blank">
-                                        Click
-                                    </a>
+                                    <!--If the user is logged in and he bought this article(book),then we display the "Download" button-->
+                                    <?php if( Auth::check() ):?>
+                                        <?php if( in_array($if_current_user_registered->id, $id_users_bought_this_content) ):?>
+                                            <div class="row">
+                                                <div class="col-lg-6 col-md-6 col-lg-offset-3 col-md-offset-3" style="margin-top:22px;">
+                                                    <a href="<?=url('/download/'.$single_article[0]->file_path);?>" type="button" class="btn btn-success" target="_blank"> Download this file </a>
+                                                </div>
+                                            </div>
+                                        <?php endif;?>
                                     <?php endif;?>
                                 </ul>
                             </div>
@@ -78,3 +106,54 @@ $if_current_user_registered = Auth::user();  //также можно испол�
     </div> <!--/.container-fluid-->
 </div> <!--/#bloglist_anchor_section-->
 <!-- /Single article Section -->
+
+
+<!--Modal window-->
+<div id="formBueUserModalWindow" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Buy this book - <b><?=$single_article[0]->alias;?></b> for $ <b><?=$single_article[0]->price;?> </h4>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url('/checkout') }}" method="POST" id="payment-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="id_customer" name="id_customer" value="<?=$if_current_user_registered->id?>">
+                    <input type="hidden" id="name_customer" name="name_customer" value="<?=$if_current_user_registered->name?>">
+                    <input type="hidden" id="email_customer" name="email_customer" value="<?=$if_current_user_registered->email?>">
+                    <input type="hidden" id="price_article" name="price_article" value="<?=$single_article[0]->price;?>">
+                    <input type="hidden" id="id_article" name="id_article" value="<?=$single_article[0]->id;?>">
+
+                    <label for="select_currency">Please, selct currency:</label>
+                    <select class="form-control" id="select_currency" name="select_currency" style="margin-bottom:22px;">
+                        <option value="usd"> USD ($)</option>
+                        <option value="eur">EUR (€) </option>
+                    </select>
+                    <div class="form-row">
+                        <label for="card-element">
+                            Credit or debit Your card:
+                        </label>
+                        <div id="card-element" style="border:1px solid #46b8da;">
+                            <!-- A Stripe Element will be inserted here. -->
+                        </div>
+
+                        <!-- Used to display Element errors. -->
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-info" style="margin-top:22px;">Submit Payment</button>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="display:none;">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--/Modal window-->

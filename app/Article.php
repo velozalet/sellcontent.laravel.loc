@@ -49,9 +49,14 @@ class Article extends Model
         return $result_entries = self::select( self::$_select )->where( $where[0],$where[1],$where[2] )->get();
     }
 
+
     /** RELATIONSHIPS: */
     public function articlesCategories() {
         return $this->belongsTo('App\ArticleCategory', 'articles_category_id', 'id');
+    }
+
+    public function users() {
+        return $this->belongsToMany('App\User', 'users_articles_buy');
     }
 
 } //__/class Article

@@ -29,6 +29,10 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Role','users_roles');
     }
 
+    public function articles() {
+        return $this->belongsToMany('App\Article','users_articles_buy');
+    }
+
 
     /** canDo - Check whether the current user has rights to certain actions on the site.
      * @param $currentUserID - ID of current authenticated User
