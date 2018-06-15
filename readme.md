@@ -56,3 +56,13 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+==========================================
+
+**DESCRIPTION THIS PROJECT:**
+
+- Laravel (5.5v);
+- авторизация/регистрация;
+- реализована система ролей для Юзеров в части просмотра/ редактирования определенного контента. Юзер,который загружает контент для продажи (книги) может видеть свои товары и редактировать их. Админ видит все товары и пользователей,которые их добавили.
+- Подвязаниа и настроена платежная система Stripe. Тестовый аккаунт и ключи.
+- Админ-панель: нет. В процесе...
